@@ -1,22 +1,349 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>She Said No to the Pack Dance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小说/微短剧 H5 落地页在线生成器</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
-      background-color: #0b0b0d;
-      color: #d1d5db;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Georgia, serif;
-      line-height: 1.8;
-      padding-bottom: 90px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", sans-serif;
+      background: #121214;
+      color: #f4f4f5;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
     }
-    .top-bar {
+
+    /* 左侧控制台 */
+    .editor-pane {
+      width: 420px;
+      min-width: 380px;
+      background: #1e1e22;
+      border-right: 1px solid #2d2d35;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .pane-title { font-size: 18px; font-weight: 700; color: #facc15; }
+    .pane-desc { font-size: 12px; color: #a1a1aa; margin-bottom: 6px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 12px; font-weight: 600; color: #e4e4e7; }
+    input[type="text"], textarea {
+      background: #141416;
+      border: 1px solid #3f3f46;
+      border-radius: 6px;
+      padding: 9px 12px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus, textarea:focus { border-color: #facc15; }
+    textarea { resize: vertical; line-height: 1.5; }
+    .file-input { font-size: 12px; color: #a1a1aa; margin-top: 4px; }
+
+    .btn-export {
+      margin-top: 10px;
+      background: #facc15;
+      color: #000;
+      font-weight: 700;
+      padding: 13px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 4px 14px rgba(250, 204, 21, 0.25);
+    }
+    .btn-export:hover { background: #eab308; }
+    .btn-export:active { transform: scale(0.99); }
+
+    /* 右侧模拟器预览区 */
+    .preview-pane {
+      flex: 1;
+      background: #09090b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow: auto;
+    }
+    .phone-frame {
+      width: 390px;
+      height: 780px;
+      background: #0b0b0d;
+      border: 8px solid #27272a;
+      border-radius: 40px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+    }
+    .phone-frame::-webkit-scrollbar { display: none; }
+
+    /* --- H5 页面预览样式 --- */
+    .h5-topbar {
       position: sticky;
       top: 0;
-      z-index: 50;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: rgba(11, 11, 13, 0.88);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .h5-app-info { display: flex; align-items: center; gap: 8px; }
+    .h5-app-icon { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; background: #facc15; }
+    .h5-app-text .name { font-size: 13px; font-weight: bold; color: #fff; line-height: 1.2; }
+    .h5-app-text .rating { font-size: 10px; color: #f59e0b; }
+    .h5-btn-top {
+      background: #facc15;
+      color: #000;
+      font-weight: bold;
+      font-size: 11px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      text-decoration: none;
+    }
+
+    .h5-hero { position: relative; width: 100%; height: 360px; overflow: hidden; }
+    .h5-hero-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .h5-hero-mask {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 120px;
+      background: linear-gradient(to bottom, transparent, #0b0b0d);
+    }
+
+    .h5-main { padding: 0 20px; text-align: center; }
+    .h5-title {
+      font-family: Georgia, serif;
+      font-size: 20px;
+      font-weight: bold;
+      color: #fef08a;
+      line-height: 1.35;
+      margin-bottom: 8px;
+    }
+    .h5-subtitle {
+      font-size: 12px;
+      font-style: italic;
+      color: #eab308;
+      line-height: 1.4;
+      margin-bottom: 16px;
+    }
+    .h5-tag {
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      color: #71717a;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .h5-pov {
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: #a1a1aa;
+      margin-bottom: 16px;
+    }
+    .h5-body {
+      text-align: left;
+      font-size: 14px;
+      color: #d4d4d8;
+      line-height: 1.8;
+      padding-bottom: 80px;
+    }
+    .h5-body p { margin-bottom: 14px; }
+    .h5-body p:first-of-type::first-letter {
+      font-size: 24px;
+      font-weight: bold;
+      color: #facc15;
+      float: left;
+      padding-right: 4px;
+    }
+
+    .h5-bottom {
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 12px 20px 18px;
+      background: linear-gradient(to top, #0b0b0d 80%, transparent);
+      text-align: center;
+      z-index: 40;
+    }
+    .h5-btn-main {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 42px;
+      background: #facc15;
+      color: #000;
+      border-radius: 21px;
+      font-size: 14px;
+      font-weight: bold;
+      text-decoration: none;
+      box-shadow: 0 4px 15px rgba(250, 204, 21, 0.3);
+    }
+    .h5-hint { font-size: 10px; color: #71717a; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- 左侧控制面板 -->
+  <aside class="editor-pane">
+    <div>
+      <div class="pane-title">落地页生产配置</div>
+      <div class="pane-desc">实时修改参数，右侧真机视图联动，点击底部直接导出</div>
+    </div>
+
+    <div class="form-group">
+      <label>App 品牌名称</label>
+      <input type="text" id="cfg-app-name" value="AnyStories">
+    </div>
+
+    <div class="form-group">
+      <label>App 评分标签</label>
+      <input type="text" id="cfg-app-rate" value="★★★★★ 4.8 • 180k reviews">
+    </div>
+
+    <div class="form-group">
+      <label>封面图片 (输入外链 或 本地上传)</label>
+      <input type="text" id="cfg-img-url" value="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=800&q=80" placeholder="贴入图片 URL">
+      <input type="file" id="cfg-img-file" class="file-input" accept="image/*">
+    </div>
+
+    <div class="form-group">
+      <label>小说主标题</label>
+      <textarea id="cfg-title" rows="2">She Said No to the Pack Dance—Until One Promise Pulled Her In</textarea>
+    </div>
+
+    <div class="form-group">
+      <label>钩子副标题 (Subtitle)</label>
+      <textarea id="cfg-subtitle" rows="2">Her best friend begged her to attend the pack dance. Emily expected to feel like a third wheel—not to walk into a night that could change her heart.</textarea>
+    </div>
+
+    <div class="form-group">
+      <label>章节号与视角</label>
+      <input type="text" id="cfg-chapter" value="CHAPTER 2">
+      <input type="text" id="cfg-pov" value="— EMILY'S POV —" style="margin-top:4px;">
+    </div>
+
+    <div class="form-group">
+      <label>正文文本 (每段按回车换行)</label>
+      <textarea id="cfg-body" rows="6">"Please, Emily!" Mila, my best friend, begged over the link. "I really want to go!"
+
+"I'm not standing in your way, Mila. You are welcome to go and attend the pack dance," I linked back. "Go and have some fun with Jax."
+
+Jax was Mila's mate, and even though we got along just fine, I always felt like a third wheel, tangling long.
+
+"But you know it wouldn't be the same if you weren't there!" Mila sulked, her voice quivering. "And you owe me one!"
+
+I sighed, annoyed.
+
+I knew she would draw the "这里是为你封装好的最终完整版代码。它集成了**左侧可视化配置面板**、**本地图片上传/外链解析**、**右侧实时移动端模拟器**以及**一键导出下载独立 HTML 文件**功能。
+
+### 完整单文件源码
+
+你可以直接用这段代码完全替换你 GitHub 仓库中的 `index.html`：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小说/网文 H5 落地页生成器</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #18181b;
+      color: #f4f4f5;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* 左侧配置面板 */
+    .editor-pane {
+      width: 440px;
+      min-width: 380px;
+      background: #27272a;
+      border-right: 1px solid #3f3f46;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .editor-header h2 { font-size: 18px; color: #facc15; margin-bottom: 4px; }
+    .editor-header p { font-size: 12px; color: #a1a1aa; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 12px; font-weight: 600; color: #d4d4d8; }
+    input[type="text"], textarea {
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 6px;
+      padding: 9px 12px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+    input[type="text"]:focus, textarea:focus { border-color: #facc15; }
+    textarea { resize: vertical; line-height: 1.5; }
+    .file-input { font-size: 12px; color: #a1a1aa; margin-bottom: 4px; }
+
+    .btn-export {
+      margin-top: 10px;
+      background: #facc15;
+      color: #000;
+      font-weight: 700;
+      padding: 13px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      transition: opacity 0.2s;
+    }
+    .btn-export:hover { opacity: 0.9; }
+
+    /* 右侧手机模拟展示区 */
+    .preview-pane {
+      flex: 1;
+      background: #09090b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow: auto;
+    }
+    .phone-frame {
+      width: 390px;
+      height: 780px;
+      background: #0b0b0d;
+      border: 10px solid #27272a;
+      border-radius: 44px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+    .phone-frame::-webkit-scrollbar { display: none; }
+
+    /* --- 落地页内嵌预览样式 --- */
+    .h5-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -25,93 +352,91 @@
       backdrop-filter: blur(8px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .app-info { display: flex; align-items: center; gap: 10px; }
-    .app-icon { width: 34px; height: 34px; border-radius: 8px; background: #facc15; }
-    .app-name { font-size: 13px; font-weight: bold; color: #fff; line-height: 1.2; }
-    .app-rating { font-size: 11px; color: #f59e0b; }
-    .btn-top {
+    .h5-app-info { display: flex; align-items: center; gap: 8px; }
+    .h5-app-icon { width: 34px; height: 34px; border-radius: 8px; background: #facc15; }
+    .h5-app-text .name { font-size: 13px; font-weight: bold; color: #fff; line-height: 1.2; }
+    .h5-app-text .rating { font-size: 10px; color: #f59e0b; }
+    .h5-btn-top {
       background: #facc15;
       color: #000;
       font-weight: bold;
-      font-size: 12px;
+      font-size: 11px;
       padding: 5px 12px;
-      border-radius: 15px;
+      border-radius: 20px;
       text-decoration: none;
     }
-    .hero-container {
-      position: relative;
-      width: 100%;
-      height: 380px;
-      overflow: hidden;
-    }
-    .hero-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center top;
-    }
-    .hero-fade {
+
+    .h5-hero { position: relative; width: 100%; height: 380px; overflow: hidden; background: #222; }
+    .h5-hero-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .h5-hero-mask {
       position: absolute;
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 120px;
+      height: 130px;
       background: linear-gradient(to bottom, transparent, #0b0b0d);
     }
-    .content-wrap { padding: 0 20px; text-align: center; }
-    .title {
+
+    .h5-main { padding: 0 20px; text-align: center; }
+    .h5-title {
       font-family: Georgia, serif;
       font-size: 21px;
       font-weight: bold;
       color: #fef08a;
-      margin-bottom: 8px;
       line-height: 1.35;
+      margin-bottom: 8px;
     }
-    .subtitle {
+    .h5-subtitle {
       font-size: 12px;
       font-style: italic;
       color: #eab308;
-      margin-bottom: 20px;
       line-height: 1.4;
+      margin-bottom: 16px;
     }
-    .tag {
-      font-size: 11px;
+    .h5-tag {
+      font-size: 10px;
       letter-spacing: 1.5px;
       color: #71717a;
-      margin-bottom: 4px;
       text-transform: uppercase;
+      margin-bottom: 4px;
     }
-    .novel-body {
+    .h5-pov {
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: #a1a1aa;
+      margin-bottom: 16px;
+    }
+    .h5-body {
       text-align: left;
       font-size: 15px;
       color: #d4d4d8;
-      margin-top: 20px;
+      line-height: 1.8;
+      padding-bottom: 90px;
     }
-    .novel-body p { margin-bottom: 16px; }
-    .novel-body p:first-of-type::first-letter {
+    .h5-body p { margin-bottom: 14px; }
+    .h5-body p:first-of-type::first-letter {
       font-size: 24px;
       font-weight: bold;
       color: #facc15;
       float: left;
       padding-right: 4px;
     }
-    .bottom-bar {
-      position: fixed;
+
+    .h5-bottom {
+      position: sticky;
       bottom: 0;
       left: 0;
       width: 100%;
-      padding: 14px 20px 20px;
+      padding: 12px 20px 18px;
       background: linear-gradient(to top, #0b0b0d 80%, transparent);
       text-align: center;
-      z-index: 50;
+      z-index: 40;
     }
-    .btn-main {
+    .h5-btn-main {
       display: flex;
       align-items: center;
       justify-content: center;
       width: 100%;
-      max-width: 360px;
-      margin: 0 auto;
       height: 44px;
       background: #facc15;
       color: #000;
@@ -121,45 +446,299 @@
       text-decoration: none;
       box-shadow: 0 4px 15px rgba(250, 204, 21, 0.35);
     }
-    .sub-hint { font-size: 10px; color: #71717a; margin-top: 6px; }
+    .h5-hint { font-size: 10px; color: #71717a; margin-top: 4px; }
   </style>
 </head>
 <body>
+
+  <!-- 左侧控制面板 -->
+  <aside class="editor-pane">
+    <div class="editor-header">
+      <h2>落地页生成与导出</h2>
+      <p>修改左侧字段，右侧手机实时渲染，支持一键下载 HTML</p>
+    </div>
+
+    <div class="form-group">
+      <label>App 品牌名称</label>
+      <input type="text" id="cfg-app-name" value="NovelReader">
+    </div>
+
+    <div class="form-group">
+      <label>App 评分标签</label>
+      <input type="text" id="cfg-app-rate" value="★★★★★ 4.9 • 150k reviews">
+    </div>
+
+    <div class="form-group">
+      <label>封面图片 (支持直接传本地图 或 输入在线 URL)</label>
+      <input type="file" id="cfg-img-file" class="file-input" accept="image/*">
+      <input type="text" id="cfg-img-url" placeholder="在线图片 URL" value="[https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=800&q=80](https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=800&q=80)">
+    </div>
+
+    <div class="form-group">
+      <label>小说主标题</label>
+      <textarea id="cfg-title" rows="2">She Refused the Royal Summons Until the Forbidden Secret Unfolded</textarea>
+    </div>
+
+    <div class="form-group">
+      <label>副标题/引导钩子 (Subtitle)</label>
+      <textarea id="cfg-subtitle" rows="2">Everyone warned her to stay in the shadows, but one mysterious pact altered her destiny forever.</textarea>
+    </div>
+
+    <div class="form-group">
+      <label>章节编号</label>
+      <input type="text" id="cfg-chapter" value="CHAPTER 1">
+    </div>
+
+    <div class="form-group">
+      <label>视角标签 (POV)</label>
+      <input type="text" id="cfg-pov" value="— EMILY'S PERSPECTIVE —">
+    </div>
+
+    <div class="form-group">
+      <label>小说正文段落 (每段之间直接敲回车换行)</label>
+      <textarea id="cfg-body" rows="6">"You cannot avoid the grand banquet any longer," whispered Clara through the crystal link, her tone urgent and hushed.
+
+I stared out across the misty horizon, feeling the weight of an unwritten vow. "My attendance serves no purpose other than entertainment for the council."
+
+"Perhaps," Clara countered quietly, "unless the rumor is true, and the missing crown has finally chosen its rightful heir."</textarea>
+    </div>
+
+    <div class="form-group">
+      <label>底部主按钮文案</label>
+      <input type="text" id="cfg-btn-text" value="Read Free in App">
+    </div>
+
+    <div class="form-group">
+      <label>推广跳转链接 (归因链接或应用商店)</label>
+      <input type="text" id="cfg-target-link" value="[https://example.com](https://example.com)">
+    </div>
+
+    <button class="btn-export" id="btn-export">下载独立落地页 (HTML)</button>
+  </aside>
+
+  <!-- 右侧预览区域 -->
+  <main class="preview-pane">
+    <div class="phone-frame">
+      <header class="h5-topbar">
+        <div class="h5-app-info">
+          <div class="h5-app-icon"></div>
+          <div class="h5-app-text">
+            <div class="name" id="view-app-name">NovelReader</div>
+            <div class="rating" id="view-app-rate">★★★★★ 4.9</div>
+          </div>
+        </div>
+        <a href="#" class="h5-btn-top">Read Free</a>
+      </header>
+
+      <div class="h5-hero">
+        <img id="view-hero-img" class="h5-hero-img" src="" alt="Hero Cover">
+        <div class="h5-hero-mask"></div>
+      </div>
+
+      <article class="h5-main">
+        <h1 class="h5-title" id="view-title"></h1>
+        <p class="h5-subtitle" id="view-subtitle"></p>
+        <div class="h5-tag">• START READING •</div>
+        <div class="h5-tag" id="view-chapter"></div>
+        <div class="h5-pov" id="view-pov"></div>
+        <div class="h5-body" id="view-body"></div>
+      </article>
+
+      <footer class="h5-bottom">
+        <a href="#" class="h5-btn-main" id="view-btn-main">Read Free in App</a>
+        <div class="h5-hint">Tap anywhere to keep reading in the app</div>
+      </footer>
+    </div>
+  </main>
+
+  <script>
+    const inputs = {
+      appName: document.getElementById('cfg-app-name'),
+      appRate: document.getElementById('cfg-app-rate'),
+      imgUrl: document.getElementById('cfg-img-url'),
+      imgFile: document.getElementById('cfg-img-file'),
+      title: document.getElementById('cfg-title'),
+      subtitle: document.getElementById('cfg-subtitle'),
+      chapter: document.getElementById('cfg-chapter'),
+      pov: document.getElementById('cfg-pov'),
+      body: document.getElementById('cfg-body'),
+      btnText: document.getElementById('cfg-btn-text'),
+      targetLink: document.getElementById('cfg-target-link')
+    };
+
+    const views = {
+      appName: document.getElementById('view-app-name'),
+      appRate: document.getElementById('view-app-rate'),
+      heroImg: document.getElementById('view-hero-img'),
+      title: document.getElementById('view-title'),
+      subtitle: document.getElementById('view-subtitle'),
+      chapter: document.getElementById('view-chapter'),
+      pov: document.getElementById('view-pov'),
+      body: document.getElementById('view-body'),
+      btnMain: document.getElementById('view-btn-main')
+    };
+
+    let currentCover = inputs.imgUrl.value;
+
+    function renderPreview() {
+      views.appName.textContent = inputs.appName.value;
+      views.appRate.textContent = inputs.appRate.value;
+      views.heroImg.src = currentCover;
+      views.title.textContent = inputs.title.value;
+      views.subtitle.textContent = inputs.subtitle.value;
+      views.chapter.textContent = inputs.chapter.value;
+      views.pov.textContent = inputs.pov.value;
+      views.btnMain.textContent = inputs.btnText.value;
+
+      const paragraphs = inputs.body.value.split('\n').filter(p => p.trim() !== '');
+      views.body.innerHTML = paragraphs.map(p => `<p>${p}</p>`).join('');
+    }
+
+    // 本地上传图片转 base64
+    inputs.imgFile.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          currentCover = evt.target.result;
+          renderPreview();
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    inputs.imgUrl.addEventListener('input', function() {
+      currentCover = this.value;
+      renderPreview();
+    });
+
+    Object.keys(inputs).forEach(key => {
+      if (key !== 'imgFile' && key !== 'imgUrl') {
+        inputs[key].addEventListener('input', renderPreview);
+      }
+    });
+
+    renderPreview();
+
+    // 导出并下载独立 HTML
+    document.getElementById('btn-export').addEventListener('click', function() {
+      const bookTitle = inputs.title.value.trim() || 'landing_page';
+      const paragraphs = inputs.body.value.split('\n').filter(p => p.trim() !== '');
+      const bodyHtml = paragraphs.map(p => `<p>${p}</p>`).join('\n      ');
+
+      const fullPageContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>${bookTitle.replace(/"/g, '&quot;')}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      background-color: #0b0b0d;
+      color: #d1d5db;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Georgia, serif;
+      line-height: 1.8;
+      padding-bottom: 90px;
+    }
+    .top-bar {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; background: rgba(11, 11, 13, 0.9);
+      backdrop-filter: blur(8px); border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .app-info { display: flex; align-items: center; gap: 10px; }
+    .app-icon { width: 34px; height: 34px; border-radius: 8px; background: #facc15; }
+    .app-name { font-size: 13px; font-weight: bold; color: #fff; line-height: 1.2; }
+    .app-rating { font-size: 11px; color: #f59e0b; }
+    .btn-top {
+      background: #facc15; color: #000; font-weight: bold; font-size: 12px;
+      padding: 5px 12px; border-radius: 15px; text-decoration: none;
+    }
+    .hero-container { position: relative; width: 100%; height: 380px; overflow: hidden; background: #222; }
+    .hero-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .hero-fade {
+      position: absolute; bottom: 0; left: 0; width: 100%; height: 130px;
+      background: linear-gradient(to bottom, transparent, #0b0b0d);
+    }
+    .content-wrap { padding: 0 20px; text-align: center; }
+    .title { font-family: Georgia, serif; font-size: 21px; font-weight: bold; color: #fef08a; margin-bottom: 8px; line-height: 1.35; }
+    .subtitle { font-size: 12px; font-style: italic; color: #eab308; margin-bottom: 20px; line-height: 1.4; }
+    .tag { font-size: 11px; letter-spacing: 1.5px; color: #71717a; margin-bottom: 4px; text-transform: uppercase; }
+    .pov-tag { font-size: 11px; letter-spacing: 1px; color: #a1a1aa; margin-bottom: 18px; }
+    .novel-body { text-align: left; font-size: 15px; color: #d4d4d8; }
+    .novel-body p { margin-bottom: 16px; }
+    .novel-body p:first-of-type::first-letter { font-size: 24px; font-weight: bold; color: #facc15; float: left; padding-right: 4px; }
+    .bottom-bar {
+      position: fixed; bottom: 0; left: 0; width: 100%; padding: 14px 20px 20px;
+      background: linear-gradient(to top, #0b0b0d 80%, transparent); text-align: center; z-index: 50;
+    }
+    .btn-main {
+      display: flex; align-items: center; justify-content: center; width: 100%; max-width: 360px;
+      margin: 0 auto; height: 44px; background: #facc15; color: #000; border-radius: 22px;
+      font-size: 14px; font-weight: bold; text-decoration: none; box-shadow: 0 4px 15px rgba(250, 204, 21, 0.35);
+    }
+    .sub-hint { font-size: 10px; color: #71717a; margin-top: 6px; }
+  </style>
+</head>
+<body onclick="handleClick(event)">
   <header class="top-bar">
     <div class="app-info">
       <div class="app-icon"></div>
       <div>
-        <div class="app-name">AnyStories</div>
-        <div class="app-rating">★★★★★ 4.8</div>
+        <div class="app-name">${inputs.appName.value}</div>
+        <div class="app-rating">${inputs.appRate.value}</div>
       </div>
     </div>
-    <a href="#" class="btn-top">Read Free</a>
+    <a href="${inputs.targetLink.value}" class="btn-top">Read Free</a>
   </header>
 
   <div class="hero-container">
-    <img class="hero-img" src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=800&q=80" alt="Cover">
+    <img class="hero-img" src="${currentCover}" alt="Cover">
     <div class="hero-fade"></div>
   </div>
 
   <main class="content-wrap">
-    <h1 class="title">She Said No to the Pack Dance—Until One Promise Pulled Her In</h1>
-    <p class="subtitle">Her best friend begged her to attend the pack dance. Emily expected to feel like a third wheel—not to walk into a night that could change her heart.</p>
+    <h1 class="title">${inputs.title.value}</h1>
+    <p class="subtitle">${inputs.subtitle.value}</p>
     <div class="tag">• START READING •</div>
-    <div class="tag">CHAPTER 2</div>
+    <div class="tag">${inputs.chapter.value}</div>
+    <div class="pov-tag">${inputs.pov.value}</div>
 
     <div class="novel-body">
-      <p>"Please, Emily!" Mila, my best friend, begged over the link. "I really want to go!"</p>
-      <p>"I'm not standing in your way, Mila. You are welcome to go and attend the pack dance," I linked back. "Go and have some fun with Jax."</p>
-      <p>Jax was Mila's mate, and even though we got along just fine, I always felt like a third wheel, tangling long.</p>
-      <p>"But you know it wouldn't be the same if you weren't there!" Mila sulked, her voice quivering. "And you owe me one!"</p>
-      <p>I sighed, annoyed.</p>
-      <p>I knew she would draw the "you owe me one card" sooner rather than later to force me to go...</p>
+      ${bodyHtml}
     </div>
   </main>
 
   <footer class="bottom-bar">
-    <a href="#" class="btn-main">Read Free in AnyStories</a>
+    <a href="${inputs.targetLink.value}" class="btn-main">${inputs.btnText.value}</a>
     <div class="sub-hint">Tap anywhere to keep reading in the app</div>
   </footer>
+
+  <script>
+    const LINK = "${inputs.targetLink.value}";
+    let taps = 0;
+    function handleClick(e) {
+      if (e.target.closest('.bottom-bar') || e.target.closest('.top-bar')) return;
+      taps++;
+      if (taps >= 3) {
+        window.location.href = LINK;
+      }
+    }
+  <\/script>
+</body>
+</html>`;
+
+      const blob = new Blob([fullPageContent], { type: 'text/html;charset=utf-8' });
+      const downloadLink = document.createElement('a');
+      downloadLink.href = URL.createObjectURL(blob);
+      const safeName = bookTitle.slice(0, 20).replace(/[\\/:*?"<>| ]/g, '_');
+      downloadLink.download = `${safeName || 'novel_page'}.html`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      URL.revokeObjectURL(downloadLink.href);
+    });
+  </script>
 </body>
 </html>
