@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>小说/微短剧 H5 落地页在线生成器</title>
+  <title>海外网文 H5 落地页生成器 (含动态手势与底部弹窗)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
@@ -17,7 +17,7 @@
 
     /* 左侧控制台 */
     .editor-pane {
-      width: 420px;
+      width: 440px;
       min-width: 380px;
       background: #1e1e22;
       border-right: 1px solid #2d2d35;
@@ -48,21 +48,20 @@
 
     .btn-export {
       margin-top: 10px;
-      background: #facc15;
-      color: #000;
+      background: #ff2e87;
+      color: #fff;
       font-weight: 700;
       padding: 13px;
       border-radius: 8px;
       border: none;
       cursor: pointer;
       font-size: 14px;
-      transition: background 0.2s, transform 0.1s;
-      box-shadow: 0 4px 14px rgba(250, 204, 21, 0.25);
+      transition: opacity 0.2s;
+      box-shadow: 0 4px 14px rgba(255, 46, 135, 0.3);
     }
-    .btn-export:hover { background: #eab308; }
-    .btn-export:active { transform: scale(0.99); }
+    .btn-export:hover { opacity: 0.9; }
 
-    /* 右侧模拟器预览区 */
+    /* 右侧手机模拟器展示区 */
     .preview-pane {
       flex: 1;
       background: #09090b;
@@ -85,7 +84,7 @@
     }
     .phone-frame::-webkit-scrollbar { display: none; }
 
-    /* --- H5 页面预览样式 --- */
+    /* --- H5 落地页样式结构 --- */
     .h5-topbar {
       position: sticky;
       top: 0;
@@ -94,17 +93,17 @@
       align-items: center;
       justify-content: space-between;
       padding: 10px 16px;
-      background: rgba(11, 11, 13, 0.88);
+      background: rgba(11, 11, 13, 0.9);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
     .h5-app-info { display: flex; align-items: center; gap: 8px; }
-    .h5-app-icon { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; background: #facc15; }
+    .h5-app-icon { width: 34px; height: 34px; border-radius: 8px; background: #ff2e87; }
     .h5-app-text .name { font-size: 13px; font-weight: bold; color: #fff; line-height: 1.2; }
     .h5-app-text .rating { font-size: 10px; color: #f59e0b; }
     .h5-btn-top {
-      background: #facc15;
-      color: #000;
+      background: #ff2e87;
+      color: #fff;
       font-weight: bold;
       font-size: 11px;
       padding: 5px 12px;
@@ -112,7 +111,7 @@
       text-decoration: none;
     }
 
-    .h5-hero { position: relative; width: 100%; height: 360px; overflow: hidden; }
+    .h5-hero { position: relative; width: 100%; height: 360px; overflow: hidden; background: #222; }
     .h5-hero-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
     .h5-hero-mask {
       position: absolute;
@@ -157,7 +156,7 @@
       font-size: 14px;
       color: #d4d4d8;
       line-height: 1.8;
-      padding-bottom: 80px;
+      padding-bottom: 30px;
     }
     .h5-body p { margin-bottom: 14px; }
     .h5-body p:first-of-type::first-letter {
@@ -168,40 +167,191 @@
       padding-right: 4px;
     }
 
+    .h5-bottom-guide {
+      margin: 16px 0 100px;
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(255, 46, 135, 0.08);
+      border: 1px dashed rgba(255, 46, 135, 0.3);
+      color: #f472b6;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* 底部按钮栏及手势呼吸动画 */
     .h5-bottom {
       position: sticky;
       bottom: 0;
       left: 0;
       width: 100%;
       padding: 12px 20px 18px;
-      background: linear-gradient(to top, #0b0b0d 80%, transparent);
+      background: linear-gradient(to top, #0b0b0d 85%, transparent);
       text-align: center;
       z-index: 40;
     }
-    .h5-btn-main {
+    .h5-btn-container {
+      position: relative;
+      width: 100%;
+      height: 48px;
+      border-radius: 24px;
+      background: #ff2e87;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: bold;
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      animation: breatheAnim 0.8s ease-in-out infinite;
+    }
+
+    @keyframes breatheAnim {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 46, 135, 0.4);
+      }
+      50% {
+        transform: scale(1.04);
+        box-shadow: 0 4px 18px rgba(255, 46, 135, 0.7);
+      }
+    }
+
+    /* 手部波纹与手势 */
+    .h5-btn-container.hand-effect::before {
+      content: " ";
+      position: absolute;
+      background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANIAAADSCAMAAAAIR25wAAAAYFBMVEUAAAD/+OP/+93///7/++H///7///7/////++L///////////////3//N///d7///////7///////////7//eH/+97///3//eD//OP//Oj/+eL//fD//vP//OT//uv//etHE6v2AAAAIHRSTlMADBOeKpaohxuPXoBnNCFwsHp1tjpMvURWZECEjl50e/3jW/4AABIzSURBVHja7JmJVhNBEEWNCO4LHjkKZvn/v7S784Y7VdXLZEgUz6EmYEDQXG/V6xp89VIv9VIv9VIv9VIv9Xxqo8f0xi//YfG6IQHx/wMDRgx6bJy3/4LKvHJs4MZA6cueMRj/9unRswRxfnvebbiBg9eMk46lZ9iFvMq5pfRhrcRivu25mTJe9JTXr8fsgmz6tueVg8ZL+YXX29KEQDLlmeSEHZjNxAPKax5cqgkZQ88kAM0cyAA8hcXU8VNGmOieQVBszIoDDnI6pS8xTrH074aKMRAPbhaV2PXN5MTfBcLQ3BJANZx3s4pYKqhw/xeLU9/zWJROuSYkCP8NFE3vUrpG8yVdpmYfVmT9I1OMsA5Rki3gpIerwgiZhVKq28cFCxyASDgLNEd58+WNKqJFqlecwH9VEqmNIPxMKJ2asFTOFM13eTD+ElIBoDbOGIuo0J/LVnFRqo2POd9wBmc5ljVVZAnlskCmFdwMNXg+NypSAUX4XZ4KSzjqAAEwxoqmTOudn4gx4l0NqIbzo9SDrvRIFbgilFto8XQJQVlRF8jAPOT6OavyifJbgarWfpe848BPJIpAGUYod6GEBpY3RfYdRV3GE6b090QgBGUeYH65AuwBVzUoQgJPl1i8VabnvKDMI5bd7v7+fj+7Uu12E9hR1hDqcscTSQcRQPAUPRPN/nD4beqw3x/Bjli4AiowcXSc3ZF4LBFA+Ek4iSbDbHNdP1b58AiWqI5YqLJMpcwmewFHqg5Q8ZN4Ms4c5arUHC1jFSqpqkDhicX/fDAQVRQBlHhSTwkncwil4FzlSzXHyqoERfeR5/6nmeciCmMEkEYoCyp+Eg84GSPUDCtRJaiiSlCIsgN1Pk38UTiCyBjKQIfkh9dMtbCyq6QqQkUmNJ0JSpJoOogegfYJyI/N+0pNVMevlapdab9j+tUHigl4KhDJAJFp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") no-repeat center center;
+      background-size: 100% 100%;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      animation: beforeScale 0.75s linear infinite;
+      top: 50%;
+      margin-top: -14px;
+      right: 32px;
+      z-index: 10;
+    }
+    .h5-btn-container.hand-effect::after {
+      content: " ";
+      position: absolute;
+      background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAACWCAMAAAAL34HQAAABI1BMVEUAAADMyMSsoaHg4ujOzMzN1eKpud7d9vvx+/ns382YmJ6Rmabw7+fM2e/V3fS0udL18+vr/PyZpLHu59vi5uze7PnU4vn6+vO7y+KWocG5zeze5fCWn7f08ej2+PHL2u6bnKmPlJ21zOqWn7Xj5/P38d7e6fT18uaWnqv4/ffG1vb4+fGxwuDJ2/yksMuTn7rf6vT1/frO4Pfx+vezxdzk0b+0ucSltM7CzumxwNrgzsG2vtrAzenu+/bc7vTr6OHI1fGhs8T69umouMvt6OGpsczk1MPj+f/R5f/r///Y7P+0zPXc8f/E2P/K3v++0vmrxvOlwO/y//+40f2Pn8aiueOwyOysw+eUps6ZsNnE3f7Y7vjC0/D8///J3vLT6fTl8vqyedngAAAAR3RSTlMAEAs9LBr+/vwhHXdte7tZRfGghS/5+ddz+/Tf08+pVzsv5L6glo5ZWPLr6s317+zo4NXCt3Y//LqaVefT0b+nnNO3dPO9xz/encgAAAvgSURBVHja7JlxT9pQFMULlECXwmgKssyAixGJMpMhc9nM1MUta6GFTshcMhj4/T/Fbm/f4/i68U/rVv7gUJvwgvrznHtvX6u200477bTTTluhXL3WNc1urahtkYq14+sry7L6gyOzrm2LCscDyxlG6re72+FY/uC65DAVa9rsFLQt0ME5UZGILKI7ade0zKWTV0JMRV/lQfZclYYfCZYRV9Y5Fq/nI5ICRn61M+aqvVm5rgADGXEZWpay99xQI1gmuI5yWoY6IiyAjWCYZWbJVZ247uQRGfzqd7WMxFikCGzkuuCiQZFlO1bHJOkYsJisnV2M1YCw2K8JUalcJ6aWlT4tFswlDVPK/iqzGCveIgiYS5SXGmNWu4mDU8IKogKb/NGOVlYx6oeeR1yywEZbEmPuPWMFsh8x7xlrmlU3VjyS5GI9xhpm1Y2FQ8HFMca7kTar2Wzui5QiyuvPYV/uZBPji5cKV3yqDnvd2N4/l9f+g/TX9/cby4s0HehA0i8vbNu+uPyHuzHYdY/y4hyVGIe4NhY6rV6ZdNJr2bpy71urFZ6atPhWxhio00tinXQjq8yW9cD3INPptHcrb0MMsz1o9ptXt53u01bh80O2CzlOYluclhF6Yr4pOQI0JGtecI3V2n2LQacnzZvaU4LlPtzfM5gse9gl7jhs+pT5RiwxVchl5olq32JMAWYbT171ajvyNVtyNWta/XwEVKYYNruaXp2XpH0haq9joGMNXTdy6WaqYhdXl8Aasl3t4ifRCZKUKMqtyxd7I45Z2BVy6RxAwezctkhUcckNzH/mWc9cJMx6WUzW8el4HMOio/VxGWKBK/Ir17256lvlchTsrZkYLPeCuXAVCoVmJK69AFgRBR3lxsL1Q7c410h9u25fWUMhBusk56oAi7iAJSn8RbiKFaYYOqslLTAYuAb785JsWFJ52rON5NNLKXvuRlQ4abkYP8IC14rfwi5ycb7yHXDRuWc/S96OsIu41BRJpWVklxPjms/jWLy2/nOY68tFLvlUVWNUZxf9rsUYWMBwVnM0I7hKnKMUNW0+aTu+iF8bOTRwLRe06MMu4Vdpta4kcBFVhM4v4vr6Knl5qc2o2uVQjLALMRLXXBBIMP44rfESy0kT47uPf4kRRe+syK7R2i5QrMuIV4AGt0K73qXcEuLaiGYUMS7ZLoQouSSUUmB4TJzSrmcU40zFwgDlboRdsWqKg6lmEVf5q64ljzGYEdmMsSYCq1RaY8zZLmxwkBm9AAILBS3l/JDCrvxnipGwQjA0I7CcFXHNfWD9+vUL3sjgJCjcotZ0Hm50LXmMwYwVxKvLibrRxYxwGIu4JAYqH6SSl7R/qSWP8XA280Is5gJWyMWHL6jiWKKyIRlryEvy/UbyFLX8B0+6pdrFGATHAhcUQTkCjZHAGWI93BhptqoSKwRTsUgbuZThCUnW0OX9Qpo7jpeMFXIhRmABzEc7sj2ywPFJ5uHvYKyGmUtzx8FVDyxcGaPqUpJEZlCEAqNYvj9qHBlaqqonKZcgcCm/iFfhlHQLUFxq4tM0AvfrKbDylQBYsAtY0i+swq3HDSnzC08+Yx1oKfTsvcBiLtiFHIWwyDiY9ehIOEtYjUou1X22B7uApXTjUKkuISAhbFCRjovpHl2OCWszlwxxTeUoBwJUsOinVFFciYcEHpaAi7HUbkQp4eSIk+qW654XUj5ckrPrJ3YSwHoMpabooFkVswTW3kGayVU59TyMVHSjIGE4gPELJ2kloASWS0pR88bR2cyLuICFGCFwIU56xaodGZKS13y9ejb2vt0pWBPYBW3mg9QMJ25VT0hVuN4jqh9334DFUMy1EWzzug8qwjqvJ0yQqMaed3d3J7Fg1whgf4I8bAJjKoE1OS0kq/abxmRMlfVNxcITQiEnOgk6QPnywFuYRVhnyS4/dsP9GWF9D1Mcwy78+ywmUXM+YORbhlLdOkvUioXf7ZvvT9NAHMZXyJbo/JFMJaIkQmbIQnD4woiILySGSFbXboH2GPH//zv83nM/nmtXEnuI48WethuBkX54nu9dr3fl7YWYdanNKmp2CZTeHNkSHnhAwoRrVMDqxkQoZuUWqwDWpbPLaWKlyfBSZ6OI5d2afo/A2vw40RlKiEK1yAUr90FaKLwQ7W/E0hJ9iegh9l9dCJbmUsXiWjPZ+uI6O9BIRjXieKwLhxXRcSVvL0KsVLhARqwA7C/ZmCAyzCI6rk39HFCmudIZ3NJQELgggJkZcnLV2bhb4dMZsNp3XE+2jNNTmYgoFldTYjFJgLkkGz3zAfJb+KT8XnZzE4G177CEa764vhGsRjAEgsOSMdNG2T8BWAfvNtpivcepwCV2Ke1WapCWDcNmfOPWLMueWaykNZY9k2BNcyVHngtWeluQeNFvFNmWzYJb0w+v22MhIBghTDfgurRcU5CRix8N/QJBCASvsLsc2l999uW3rF8ZAHLEWDOsihZs7G+rXE4ZmmL7q8/TD/4pIIfloFIYlk8DOctIBSjnmdn4pXUra3/1eXdgzubbo2A5wSxyZbeyhSUWdL3Eaj0P0T1wk22yeyqC5e6elmhZkCaDJMzEQnquLOJW8VnOkYymyg0PdoztvaZUjcuisQU4tAxc6OZbF5c9JbAcl2eTLadqjhGtQRPmuNW+P315wDMCKvdMKbByctU8Y2NZvqIzVW3Xfjdi7iFN7Qkd1SyFiKe/XQfLXJpVLpLxEhpzT/barcEyQYCRDagBFsVWbOKyHLwu2UAj5sG738QQrN/VoWYGLScds2xOcsJyD3v8i60X3Ui7Sm8M2Zjnb+tok2cc+WSs9tqFGym2tQtQhiv0iwfRKo6hAYfdBYvdjsKcZx+/Rj2fBKZSK2V6ZKI0VXq7X+Gzv5C161fE0+XdQyESKkjeqmaRLTeOGSZrF7HCLh9YVtauiLufd2JXIG8TPStDv6imYWJ4K07HXu23t2vjexpizWazVB94mVmokoHm9Cu0i30EsQj2cTNi0edbwKVKYjl5JIKZwYUBy7zAFVL9BJZs75Oox8yUkh2HmjWq0gAES0TDAssIVZlViln92TgpHRJSbFS1ZTqsKWXMIhXkY4xZLOt+AlSjU3NyBVQQ0rRMXIwMoWjX5NmjiPI61VzzuTCUs9KSlHW0wC4fIufEAipOHnKeZOtpTHmdggqqejUnGJMUrFSwbJGFVJMwP33YuZtp9nYzjsswKXA1p8koGSKw+DxmrazAhCFm+htTSnFcFL3Cm1dl2EOsamEF00nyszwtVa/Xe7PZieLyRNgMmgUkWuVymUOkMliOSnwCUtErtA4/xy3CHqrQLexyeCQGSbegGpVPT5hSBaKe6Ph5ErnG/6nQM7s4IIA5IIoDDAtFKkKZ7Arq/HH0KuxJTzgUDkAhTZaapQsGP0iQ3fskKCkPtVhci8aju6wrHopX2EP5SqsbVvufDsdEpzQRtD1ghHGGKZl1JhDfm6hyl6BgQYIoUI6JGjLCSMPOe+IWwaquVa7bXKwVmc4cXZSy0VE7u527Knl+KGAixocdB0yzw0W7WBtMOiA9WGVorkSg2ovHoZIfZ8eIodk25ahgFtwilLJQV0706u7aGA3GPcEiF+tMGaycEWKWVNKTcBVK6qqiIanurr3+cHzcEzbfkxXECvuGzBqF1b8lKmmDSPCfkg3Ox9oyCJEWDosDZjNhV4Ui1VE/6dyD9kY/zopAc0UscMEpkbZzUafaHu5udO5Jye7g7LjnuAxWOGJGTSlaRR31H3fuUwmaQBNWvpwfrRq1sCq60HZgGbhScIFJoGaN+e3AqvvXYwEDlcECU4miAlUtv4gGGA92phRT1Le96Mx8gISKKvX4KM/BhbkSR1Uvq2sU1f9V8tqEmIJKsVsIiyrp/HclJxoLTEoVy1So9BXoc0+VDsqOYBjfKqA4NaCpCmsVqVYCxYfZ4ZRIzAqojoYjQK1Ku6elwSLVNbuElSkZKAx4WFfbw/7eyqBo11gBylTWNtJ7ANroj32IR8P+bueBKBmd6YHreGcwegDhVa6Og0F/L+mstdZaa621VoP+ANEzcOCJJOH7AAAAAElFTkSuQmCC") no-repeat center center;
+      background-size: 100% 100%;
+      width: 32px;
+      height: 32px;
+      animation: afterScale 0.75s linear infinite;
+      top: 30px;
+      right: 14px;
+      z-index: 12;
+    }
+
+    @keyframes beforeScale {
+      0%, 100% { transform: scale(1); opacity: 0; }
+      25% { transform: scale(1.4); opacity: 1; }
+      50% { transform: scale(1.9); opacity: 0.8; }
+      75% { transform: scale(2.2); opacity: 0.1; }
+    }
+    @keyframes afterScale {
+      0%, 100% { top: 32px; right: 20px; }
+      50% { top: 40px; right: 12px; }
+    }
+
+    /* 底部滑动截流弹窗 (Bottom Sheet Modal) */
+    .h5-modal-mask {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
-      height: 42px;
-      background: #facc15;
-      color: #000;
-      border-radius: 21px;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 99;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      display: flex;
+      align-items: flex-end;
+    }
+    .h5-modal-mask.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .h5-modal-sheet {
+      width: 100%;
+      background: #18181b;
+      border-radius: 20px 20px 0 0;
+      padding: 24px 20px 24px;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+      position: relative;
+    }
+    .h5-modal-mask.show .h5-modal-sheet {
+      transform: translateY(0);
+    }
+    .h5-modal-close {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      color: #71717a;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .h5-modal-book {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .h5-modal-cover {
+      width: 60px;
+      height: 80px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #27272a;
+    }
+    .h5-modal-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: left;
+    }
+    .h5-modal-title {
       font-size: 14px;
       font-weight: bold;
-      text-decoration: none;
-      box-shadow: 0 4px 15px rgba(250, 204, 21, 0.3);
+      color: #fff;
+      line-height: 1.3;
+      margin-bottom: 4px;
     }
-    .h5-hint { font-size: 10px; color: #71717a; margin-top: 4px; }
+    .h5-modal-tip {
+      font-size: 11px;
+      color: #a1a1aa;
+    }
+    .h5-modal-btn {
+      width: 100%;
+      height: 44px;
+      background: #ff2e87;
+      color: #fff;
+      border-radius: 22px;
+      font-size: 14px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(255, 46, 135, 0.4);
+    }
   </style>
 </head>
 <body>
 
-  <!-- 左侧控制面板 -->
+  <!-- 左侧输入栏 -->
   <aside class="editor-pane">
     <div>
-      <div class="pane-title">落地页生产配置</div>
-      <div class="pane-desc">实时修改参数，右侧真机视图联动，点击底部直接导出</div>
+      <div class="pane-title">落地页生产配置 (含手势与弹窗)</div>
+      <div class="pane-desc">左侧实时修改，右侧真机联动，点击导出单页 HTML</div>
     </div>
 
     <div class="form-group">
@@ -215,339 +365,117 @@
     </div>
 
     <div class="form-group">
-      <label>封面图片 (输入外链 或 本地上传)</label>
-      <input type="text" id="cfg-img-url" value="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=800&q=80" placeholder="贴入图片 URL">
+      <label>封面图片 (直接传本地图 或 贴链接)</label>
       <input type="file" id="cfg-img-file" class="file-input" accept="image/*">
+      <input type="text" id="cfg-img-url" placeholder="或者输入图片网络 URL" value="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=800&q=80">
     </div>
 
     <div class="form-group">
       <label>小说主标题</label>
-      <textarea id="cfg-title" rows="2">She Said No to the Pack Dance—Until One Promise Pulled Her In</textarea>
+      <textarea id="cfg-title" rows="2">Who's the Real Mrs. Whitfield?</textarea>
     </div>
 
     <div class="form-group">
-      <label>钩子副标题 (Subtitle)</label>
-      <textarea id="cfg-subtitle" rows="2">Her best friend begged her to attend the pack dance. Emily expected to feel like a third wheel—not to walk into a night that could change her heart.</textarea>
+      <label>副标题 (Subtitle)</label>
+      <textarea id="cfg-subtitle" rows="2">Since when did my husband become someone else's?</textarea>
     </div>
 
     <div class="form-group">
-      <label>章节号与视角</label>
-      <input type="text" id="cfg-chapter" value="CHAPTER 2">
-      <input type="text" id="cfg-pov" value="— EMILY'S POV —" style="margin-top:4px;">
-    </div>
-
-    <div class="form-group">
-      <label>正文文本 (每段按回车换行)</label>
-      <textarea id="cfg-body" rows="6">"Please, Emily!" Mila, my best friend, begged over the link. "I really want to go!"
-
-"I'm not standing in your way, Mila. You are welcome to go and attend the pack dance," I linked back. "Go and have some fun with Jax."
-
-Jax was Mila's mate, and even though we got along just fine, I always felt like a third wheel, tangling long.
-
-"But you know it wouldn't be the same if you weren't there!" Mila sulked, her voice quivering. "And you owe me one!"
-
-I sighed, annoyed.
-
-I knew she would draw the "这里是为你封装好的最终完整版代码。它集成了**左侧可视化配置面板**、**本地图片上传/外链解析**、**右侧实时移动端模拟器**以及**一键导出下载独立 HTML 文件**功能。
-
-### 完整单文件源码
-
-你可以直接用这段代码完全替换你 GitHub 仓库中的 `index.html`：
-
-```html
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>小说/网文 H5 落地页生成器</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #18181b;
-      color: #f4f4f5;
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    /* 左侧配置面板 */
-    .editor-pane {
-      width: 440px;
-      min-width: 380px;
-      background: #27272a;
-      border-right: 1px solid #3f3f46;
-      padding: 24px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .editor-header h2 { font-size: 18px; color: #facc15; margin-bottom: 4px; }
-    .editor-header p { font-size: 12px; color: #a1a1aa; }
-
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    label { font-size: 12px; font-weight: 600; color: #d4d4d8; }
-    input[type="text"], textarea {
-      background: #18181b;
-      border: 1px solid #3f3f46;
-      border-radius: 6px;
-      padding: 9px 12px;
-      color: #fff;
-      font-size: 13px;
-      outline: none;
-    }
-    input[type="text"]:focus, textarea:focus { border-color: #facc15; }
-    textarea { resize: vertical; line-height: 1.5; }
-    .file-input { font-size: 12px; color: #a1a1aa; margin-bottom: 4px; }
-
-    .btn-export {
-      margin-top: 10px;
-      background: #facc15;
-      color: #000;
-      font-weight: 700;
-      padding: 13px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-size: 14px;
-      transition: opacity 0.2s;
-    }
-    .btn-export:hover { opacity: 0.9; }
-
-    /* 右侧手机模拟展示区 */
-    .preview-pane {
-      flex: 1;
-      background: #09090b;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      overflow: auto;
-    }
-    .phone-frame {
-      width: 390px;
-      height: 780px;
-      background: #0b0b0d;
-      border: 10px solid #27272a;
-      border-radius: 44px;
-      overflow-y: auto;
-      overflow-x: hidden;
-      position: relative;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-    }
-    .phone-frame::-webkit-scrollbar { display: none; }
-
-    /* --- 落地页内嵌预览样式 --- */
-    .h5-topbar {
-      position: sticky;
-      top: 0;
-      z-index: 40;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 16px;
-      background: rgba(11, 11, 13, 0.9);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .h5-app-info { display: flex; align-items: center; gap: 8px; }
-    .h5-app-icon { width: 34px; height: 34px; border-radius: 8px; background: #facc15; }
-    .h5-app-text .name { font-size: 13px; font-weight: bold; color: #fff; line-height: 1.2; }
-    .h5-app-text .rating { font-size: 10px; color: #f59e0b; }
-    .h5-btn-top {
-      background: #facc15;
-      color: #000;
-      font-weight: bold;
-      font-size: 11px;
-      padding: 5px 12px;
-      border-radius: 20px;
-      text-decoration: none;
-    }
-
-    .h5-hero { position: relative; width: 100%; height: 380px; overflow: hidden; background: #222; }
-    .h5-hero-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
-    .h5-hero-mask {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 130px;
-      background: linear-gradient(to bottom, transparent, #0b0b0d);
-    }
-
-    .h5-main { padding: 0 20px; text-align: center; }
-    .h5-title {
-      font-family: Georgia, serif;
-      font-size: 21px;
-      font-weight: bold;
-      color: #fef08a;
-      line-height: 1.35;
-      margin-bottom: 8px;
-    }
-    .h5-subtitle {
-      font-size: 12px;
-      font-style: italic;
-      color: #eab308;
-      line-height: 1.4;
-      margin-bottom: 16px;
-    }
-    .h5-tag {
-      font-size: 10px;
-      letter-spacing: 1.5px;
-      color: #71717a;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-    .h5-pov {
-      font-size: 10px;
-      letter-spacing: 1px;
-      color: #a1a1aa;
-      margin-bottom: 16px;
-    }
-    .h5-body {
-      text-align: left;
-      font-size: 15px;
-      color: #d4d4d8;
-      line-height: 1.8;
-      padding-bottom: 90px;
-    }
-    .h5-body p { margin-bottom: 14px; }
-    .h5-body p:first-of-type::first-letter {
-      font-size: 24px;
-      font-weight: bold;
-      color: #facc15;
-      float: left;
-      padding-right: 4px;
-    }
-
-    .h5-bottom {
-      position: sticky;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      padding: 12px 20px 18px;
-      background: linear-gradient(to top, #0b0b0d 80%, transparent);
-      text-align: center;
-      z-index: 40;
-    }
-    .h5-btn-main {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 44px;
-      background: #facc15;
-      color: #000;
-      border-radius: 22px;
-      font-size: 14px;
-      font-weight: bold;
-      text-decoration: none;
-      box-shadow: 0 4px 15px rgba(250, 204, 21, 0.35);
-    }
-    .h5-hint { font-size: 10px; color: #71717a; margin-top: 4px; }
-  </style>
-</head>
-<body>
-
-  <!-- 左侧控制面板 -->
-  <aside class="editor-pane">
-    <div class="editor-header">
-      <h2>落地页生成与导出</h2>
-      <p>修改左侧字段，右侧手机实时渲染，支持一键下载 HTML</p>
-    </div>
-
-    <div class="form-group">
-      <label>App 品牌名称</label>
-      <input type="text" id="cfg-app-name" value="NovelReader">
-    </div>
-
-    <div class="form-group">
-      <label>App 评分标签</label>
-      <input type="text" id="cfg-app-rate" value="★★★★★ 4.9 • 150k reviews">
-    </div>
-
-    <div class="form-group">
-      <label>封面图片 (支持直接传本地图 或 输入在线 URL)</label>
-      <input type="file" id="cfg-img-file" class="file-input" accept="image/*">
-      <input type="text" id="cfg-img-url" placeholder="在线图片 URL" value="[https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=800&q=80](https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=800&q=80)">
-    </div>
-
-    <div class="form-group">
-      <label>小说主标题</label>
-      <textarea id="cfg-title" rows="2">She Refused the Royal Summons Until the Forbidden Secret Unfolded</textarea>
-    </div>
-
-    <div class="form-group">
-      <label>副标题/引导钩子 (Subtitle)</label>
-      <textarea id="cfg-subtitle" rows="2">Everyone warned her to stay in the shadows, but one mysterious pact altered her destiny forever.</textarea>
-    </div>
-
-    <div class="form-group">
-      <label>章节编号</label>
+      <label>章节与视角标签</label>
       <input type="text" id="cfg-chapter" value="CHAPTER 1">
+      <input type="text" id="cfg-pov" value="— EMILY'S PERSPECTIVE —" style="margin-top:4px;">
     </div>
 
     <div class="form-group">
-      <label>视角标签 (POV)</label>
-      <input type="text" id="cfg-pov" value="— EMILY'S PERSPECTIVE —">
-    </div>
+      <label>正文段落 (每段直接敲回车换行)</label>
+      <textarea id="cfg-body" rows="6">My husband, Julian Whitfield, tells me he's flying to Italy for a month-long business trip.
 
-    <div class="form-group">
-      <label>小说正文段落 (每段之间直接敲回车换行)</label>
-      <textarea id="cfg-body" rows="6">"You cannot avoid the grand banquet any longer," whispered Clara through the crystal link, her tone urgent and hushed.
+I check the calendar. His birthday falls right in the middle of it.
 
-I stared out across the misty horizon, feeling the weight of an unwritten vow. "My attendance serves no purpose other than entertainment for the council."
+I mention it to my mother-in-law, Margaux, and before I've even finished the sentence she's already pulling up flights.
 
-"Perhaps," Clara countered quietly, "unless the rumor is true, and the missing crown has finally chosen its rightful heir."</textarea>
+Before we board, I call my brother Dante. He lives in Italy. My only family left.
+
+For years I've told the Whitfields he's some small-time businessman. They have no idea what he actually is.
+
+Then the check comes. Eighteen thousand euros for one bottle of wine.</textarea>
     </div>
 
     <div class="form-group">
       <label>底部主按钮文案</label>
-      <input type="text" id="cfg-btn-text" value="Read Free in App">
+      <input type="text" id="cfg-btn-text" value="👉 Continue Reading 👈">
     </div>
 
     <div class="form-group">
-      <label>推广跳转链接 (归因链接或应用商店)</label>
-      <input type="text" id="cfg-target-link" value="[https://example.com](https://example.com)">
+      <label>推广归因跳转链接 (App Store / MRAID)</label>
+      <input type="text" id="cfg-target-link" value="https://example.com">
     </div>
 
-    <button class="btn-export" id="btn-export">下载独立落地页 (HTML)</button>
+    <div class="form-group">
+      <label>弹窗预览测试</label>
+      <button type="button" id="btn-toggle-modal" style="padding: 6px; background:#3f3f46; color:#fff; border:none; border-radius:4px; cursor:pointer;">在手机框中唤起/关闭弹窗</button>
+    </div>
+
+    <button class="btn-export" id="btn-export">下载完整落地页 (HTML)</button>
   </aside>
 
-  <!-- 右侧预览区域 -->
+  <!-- 右侧模拟器预览区 -->
   <main class="preview-pane">
-    <div class="phone-frame">
+    <div class="phone-frame" id="phone-scroller">
+      <!-- 顶部条 -->
       <header class="h5-topbar">
         <div class="h5-app-info">
           <div class="h5-app-icon"></div>
           <div class="h5-app-text">
-            <div class="name" id="view-app-name">NovelReader</div>
-            <div class="rating" id="view-app-rate">★★★★★ 4.9</div>
+            <div class="name" id="view-app-name">AnyStories</div>
+            <div class="rating" id="view-app-rate">★★★★★ 4.8</div>
           </div>
         </div>
-        <a href="#" class="h5-btn-top">Read Free</a>
+        <a href="javascript:void(0)" class="h5-btn-top">Read Free</a>
       </header>
 
+      <!-- 封面图 -->
       <div class="h5-hero">
-        <img id="view-hero-img" class="h5-hero-img" src="" alt="Hero Cover">
+        <img id="view-hero-img" class="h5-hero-img" src="" alt="Hero">
         <div class="h5-hero-mask"></div>
       </div>
 
+      <!-- 核心正文 -->
       <article class="h5-main">
         <h1 class="h5-title" id="view-title"></h1>
         <p class="h5-subtitle" id="view-subtitle"></p>
         <div class="h5-tag">• START READING •</div>
         <div class="h5-tag" id="view-chapter"></div>
         <div class="h5-pov" id="view-pov"></div>
+
         <div class="h5-body" id="view-body"></div>
+
+        <div class="h5-bottom-guide">
+          What happens next? Available chapters here are limited, tap the button below to install the App and unlock all chapters 👇🏻
+        </div>
       </article>
 
+      <!-- 底部悬浮按钮 (含手指动态手势) -->
       <footer class="h5-bottom">
-        <a href="#" class="h5-btn-main" id="view-btn-main">Read Free in App</a>
-        <div class="h5-hint">Tap anywhere to keep reading in the app</div>
+        <div class="h5-btn-container hand-effect" id="view-btn-main">
+          👉 Continue Reading 👈
+        </div>
       </footer>
+
+      <!-- 底部截流弹窗 (Bottom Sheet) -->
+      <div class="h5-modal-mask" id="view-modal-mask">
+        <div class="h5-modal-sheet">
+          <div class="h5-modal-close" id="view-modal-close">&times;</div>
+          <div class="h5-modal-book">
+            <img class="h5-modal-cover" id="view-modal-cover" src="" alt="Cover">
+            <div class="h5-modal-info">
+              <div class="h5-modal-title" id="view-modal-title">Who's the Real Mrs. Whitfield?</div>
+              <div class="h5-modal-tip">Install app to keep reading Chapter 2</div>
+            </div>
+          </div>
+          <a href="javascript:void(0)" class="h5-modal-btn" id="view-modal-btn">Continue in App</a>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -570,21 +498,27 @@ I stared out across the misty horizon, feeling the weight of an unwritten vow. "
       appName: document.getElementById('view-app-name'),
       appRate: document.getElementById('view-app-rate'),
       heroImg: document.getElementById('view-hero-img'),
+      modalCover: document.getElementById('view-modal-cover'),
       title: document.getElementById('view-title'),
+      modalTitle: document.getElementById('view-modal-title'),
       subtitle: document.getElementById('view-subtitle'),
       chapter: document.getElementById('view-chapter'),
       pov: document.getElementById('view-pov'),
       body: document.getElementById('view-body'),
-      btnMain: document.getElementById('view-btn-main')
+      btnMain: document.getElementById('view-btn-main'),
+      modalMask: document.getElementById('view-modal-mask'),
+      modalClose: document.getElementById('view-modal-close')
     };
 
-    let currentCover = inputs.imgUrl.value;
+    let activeCoverSrc = inputs.imgUrl.value;
 
     function renderPreview() {
       views.appName.textContent = inputs.appName.value;
       views.appRate.textContent = inputs.appRate.value;
-      views.heroImg.src = currentCover;
+      views.heroImg.src = activeCoverSrc;
+      views.modalCover.src = activeCoverSrc;
       views.title.textContent = inputs.title.value;
+      views.modalTitle.textContent = inputs.title.value;
       views.subtitle.textContent = inputs.subtitle.value;
       views.chapter.textContent = inputs.chapter.value;
       views.pov.textContent = inputs.pov.value;
@@ -594,13 +528,13 @@ I stared out across the misty horizon, feeling the weight of an unwritten vow. "
       views.body.innerHTML = paragraphs.map(p => `<p>${p}</p>`).join('');
     }
 
-    // 本地上传图片转 base64
+    // 本地传图
     inputs.imgFile.addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = function(evt) {
-          currentCover = evt.target.result;
+          activeCoverSrc = evt.target.result;
           renderPreview();
         };
         reader.readAsDataURL(file);
@@ -608,7 +542,7 @@ I stared out across the misty horizon, feeling the weight of an unwritten vow. "
     });
 
     inputs.imgUrl.addEventListener('input', function() {
-      currentCover = this.value;
+      activeCoverSrc = this.value;
       renderPreview();
     });
 
@@ -618,15 +552,24 @@ I stared out across the misty horizon, feeling the weight of an unwritten vow. "
       }
     });
 
+    // 控制台弹窗唤起开关
+    document.getElementById('btn-toggle-modal').addEventListener('click', function() {
+      views.modalMask.classList.toggle('show');
+    });
+    views.modalClose.addEventListener('click', function(e) {
+      e.stopPropagation();
+      views.modalMask.classList.remove('show');
+    });
+
     renderPreview();
 
-    // 导出并下载独立 HTML
+    // 导出单页独立 HTML
     document.getElementById('btn-export').addEventListener('click', function() {
       const bookTitle = inputs.title.value.trim() || 'landing_page';
       const paragraphs = inputs.body.value.split('\n').filter(p => p.trim() !== '');
       const bodyHtml = paragraphs.map(p => `<p>${p}</p>`).join('\n      ');
 
-      const fullPageContent = `<!DOCTYPE html>
+      const standaloneHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -640,6 +583,7 @@ I stared out across the misty horizon, feeling the weight of an unwritten vow. "
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Georgia, serif;
       line-height: 1.8;
       padding-bottom: 90px;
+      overflow-x: hidden;
     }
     .top-bar {
       position: sticky; top: 0; z-index: 50;
@@ -648,12 +592,12 @@ I stared out across the misty horizon, feeling the weight of an unwritten vow. "
       backdrop-filter: blur(8px); border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
     .app-info { display: flex; align-items: center; gap: 10px; }
-    .app-icon { width: 34px; height: 34px; border-radius: 8px; background: #facc15; }
+    .app-icon { width: 34px; height: 34px; border-radius: 8px; background: #ff2e87; }
     .app-name { font-size: 13px; font-weight: bold; color: #fff; line-height: 1.2; }
     .app-rating { font-size: 11px; color: #f59e0b; }
     .btn-top {
-      background: #facc15; color: #000; font-weight: bold; font-size: 12px;
-      padding: 5px 12px; border-radius: 15px; text-decoration: none;
+      background: #ff2e87; color: #fff; font-weight: bold; font-size: 12px;
+      padding: 5px 14px; border-radius: 15px; text-decoration: none;
     }
     .hero-container { position: relative; width: 100%; height: 380px; overflow: hidden; background: #222; }
     .hero-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
@@ -669,20 +613,100 @@ I stared out across the misty horizon, feeling the weight of an unwritten vow. "
     .novel-body { text-align: left; font-size: 15px; color: #d4d4d8; }
     .novel-body p { margin-bottom: 16px; }
     .novel-body p:first-of-type::first-letter { font-size: 24px; font-weight: bold; color: #facc15; float: left; padding-right: 4px; }
+    
+    .bottom-guide {
+      margin: 20px 0 30px;
+      padding: 16px;
+      border-radius: 12px;
+      background: rgba(255, 46, 135, 0.08);
+      border: 1px dashed rgba(255, 46, 135, 0.35);
+      color: #f472b6;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* 底部按钮及手势动画 */
     .bottom-bar {
       position: fixed; bottom: 0; left: 0; width: 100%; padding: 14px 20px 20px;
-      background: linear-gradient(to top, #0b0b0d 80%, transparent); text-align: center; z-index: 50;
+      background: linear-gradient(to top, #0b0b0d 85%, transparent); text-align: center; z-index: 50;
     }
-    .btn-main {
-      display: flex; align-items: center; justify-content: center; width: 100%; max-width: 360px;
-      margin: 0 auto; height: 44px; background: #facc15; color: #000; border-radius: 22px;
-      font-size: 14px; font-weight: bold; text-decoration: none; box-shadow: 0 4px 15px rgba(250, 204, 21, 0.35);
+    .download-btn {
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; max-width: 380px; margin: 0 auto; height: 50px;
+      background: #ff2e87; color: #ffffff; border-radius: 25px;
+      font-size: 16px; font-weight: bold; text-decoration: none;
+      animation: breatheAnim 0.8s ease-in-out infinite;
+      cursor: pointer;
     }
-    .sub-hint { font-size: 10px; color: #71717a; margin-top: 6px; }
+    @keyframes breatheAnim {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 46, 135, 0.4); }
+      50% { transform: scale(1.05); box-shadow: 0 4px 20px rgba(255, 46, 135, 0.7); }
+    }
+    .download-btn::before {
+      content: " ";
+      position: absolute;
+      background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANIAAADSCAMAAAAIR25wAAAAYFBMVEUAAAD/+OP/+93///7/++H///7///7/////++L///////////////3//N///d7///////7///////////7//eH/+97///3//eD//OP//Oj/+eL//fD//vP//OT//uv//etHE6v2AAAAIHRSTlMADBOeKpaohxuPXoBnNCFwsHp1tjpMvURWZECEjl50e/3jW/4AABIzSURBVHja7JmJVhNBEEWNCO4LHjkKZvn/v7S784Y7VdXLZEgUz6EmYEDQXG/V6xp89VIv9VIv9VIv9VIv9Xxqo8f0xi//YfG6IQHx/wMDRgx6bJy3/4LKvHJs4MZA6cueMRj/9unRswRxfnvebbiBg9eMk46lZ9iFvMq5pfRhrcRivu25mTJe9JTXr8fsgmz6tueVg8ZL+YXX29KEQDLlmeSEHZjNxAPKax5cqgkZQ88kAM0cyAA8hcXU8VNGmOieQVBszIoDDnI6pS8xTrH074aKMRAPbhaV2PXN5MTfBcLQ3BJANZx3s4pYKqhw/xeLU9/zWJROuSYkCP8NFE3vUrpG8yVdpmYfVmT9I1OMsA5Rki3gpIerwgiZhVKq28cFCxyASDgLNEd58+WNKqJFqlecwH9VEqmNIPxMKJ2asFTOFM13eTD+ElIBoDbOGIuo0J/LVnFRqo2POd9wBmc5ljVVZAnlskCmFdwMNXg+NypSAUX4XZ4KSzjqAAEwxoqmTOudn4gx4l0NqIbzo9SDrvRIFbgilFto8XQJQVlRF8jAPOT6OavyifJbgarWfpe848BPJIpAGUYod6GEBpY3RfYdRV3GE6b090QgBGUeYH65AuwBVzUoQgJPl1i8VabnvKDMI5bd7v7+fj+7Uu12E9hR1hDqcscTSQcRQPAUPRPN/nD4beqw3x/Bjli4AiowcXSc3ZF4LBFA+Ek4iSbDbHNdP1b58AiWqI5YqLJMpcwmewFHqg5Q8ZN4Ms4c5arUHC1jFSqpqkDhicX/fDAQVRQBlHhSTwkncwil4FzlSzXHyqoERfeR5/6nmeciCmMEkEYoCyp+Eg84GSPUDCtRJaiiSlCIsgN1Pk38UTiCyBjKQIfkh9dMtbCyq6QqQkUmNJ0JSpJoOogegfYJyI/N+0pNVMevlapdab9j+tUHigl4KhDJAJFp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") no-repeat center center;
+      background-size: 100% 100%;
+      width: 28px; height: 28px; border-radius: 50%;
+      animation: beforeScale 0.75s linear infinite;
+      top: 50%; margin-top: -14px; right: 30px; z-index: 10;
+    }
+    .download-btn::after {
+      content: " ";
+      position: absolute;
+      background: url("data:image/png;base64,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") no-repeat center center;
+      background-size: 100% 100%;
+      width: 32px; height: 32px;
+      animation: afterScale 0.75s linear infinite;
+      top: 32px; right: 12px; z-index: 12;
+    }
+    @keyframes beforeScale {
+      0%, 100% { transform: scale(1); opacity: 0; }
+      25% { transform: scale(1.4); opacity: 1; }
+      50% { transform: scale(1.9); opacity: 0.8; }
+      75% { transform: scale(2.2); opacity: 0.1; }
+    }
+    @keyframes afterScale {
+      0%, 100% { top: 32px; right: 18px; }
+      50% { top: 40px; right: 10px; }
+    }
+
+    /* 底部截流弹窗 */
+    .modal-mask {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);
+      z-index: 100; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease; display: flex; align-items: flex-end;
+    }
+    .modal-mask.show { opacity: 1; pointer-events: auto; }
+    .modal-sheet {
+      width: 100%; background: #18181b; border-radius: 20px 20px 0 0;
+      padding: 24px 20px 24px; transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5); position: relative;
+    }
+    .modal-mask.show .modal-sheet { transform: translateY(0); }
+    .modal-close {
+      position: absolute; top: 14px; right: 16px;
+      color: #71717a; font-size: 24px; cursor: pointer; line-height: 1;
+    }
+    .modal-book { display: flex; gap: 14px; margin-bottom: 18px; }
+    .modal-cover { width: 64px; height: 86px; border-radius: 6px; object-fit: cover; background: #27272a; }
+    .modal-info { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: left; }
+    .modal-title { font-size: 15px; font-weight: bold; color: #fff; line-height: 1.3; margin-bottom: 4px; }
+    .modal-tip { font-size: 12px; color: #a1a1aa; }
+    .modal-btn {
+      width: 100%; height: 46px; background: #ff2e87; color: #fff;
+      border-radius: 23px; font-size: 15px; font-weight: bold;
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none; box-shadow: 0 4px 14px rgba(255, 46, 135, 0.4);
+    }
   </style>
 </head>
-<body onclick="handleClick(event)">
-  <header class="top-bar">
+<body>
+  <header class="top-bar" onclick="handleConvert()">
     <div class="app-info">
       <div class="app-icon"></div>
       <div>
@@ -690,11 +714,11 @@ I stared out across the misty horizon, feeling the weight of an unwritten vow. "
         <div class="app-rating">${inputs.appRate.value}</div>
       </div>
     </div>
-    <a href="${inputs.targetLink.value}" class="btn-top">Read Free</a>
+    <a href="javascript:void(0)" class="btn-top">Read Free</a>
   </header>
 
-  <div class="hero-container">
-    <img class="hero-img" src="${currentCover}" alt="Cover">
+  <div class="hero-container" onclick="handleConvert()">
+    <img class="hero-img" src="${activeCoverSrc}" alt="Cover">
     <div class="hero-fade"></div>
   </div>
 
@@ -708,36 +732,75 @@ I stared out across the misty horizon, feeling the weight of an unwritten vow. "
     <div class="novel-body">
       ${bodyHtml}
     </div>
+
+    <div class="bottom-guide" onclick="handleConvert()">
+      What happens next? Available chapters here are limited, click the button below to install the App and enjoy more exciting chapters 👇🏻
+    </div>
   </main>
 
   <footer class="bottom-bar">
-    <a href="${inputs.targetLink.value}" class="btn-main">${inputs.btnText.value}</a>
-    <div class="sub-hint">Tap anywhere to keep reading in the app</div>
+    <div class="download-btn" onclick="handleConvert()">
+      ${inputs.btnText.value}
+    </div>
   </footer>
 
+  <!-- 底部弹框拦截 -->
+  <div class="modal-mask" id="J_modalMask">
+    <div class="modal-sheet">
+      <div class="modal-close" onclick="closeModal(event)">&times;</div>
+      <div class="modal-book">
+        <img class="modal-cover" src="${activeCoverSrc}" alt="Cover">
+        <div class="modal-info">
+          <div class="modal-title">${inputs.title.value.replace(/"/g, '&quot;')}</div>
+          <div class="modal-tip">Install app to keep reading next chapter</div>
+        </div>
+      </div>
+      <a href="javascript:void(0)" class="modal-btn" onclick="handleConvert()">Continue in App</a>
+    </div>
+  </div>
+
   <script>
-    const LINK = "${inputs.targetLink.value}";
-    let taps = 0;
-    function handleClick(e) {
-      if (e.target.closest('.bottom-bar') || e.target.closest('.top-bar')) return;
-      taps++;
-      if (taps >= 3) {
-        window.location.href = LINK;
+    var TARGET_URL = "${inputs.targetLink.value}";
+    var hasShownModal = false;
+
+    // 转化与投流跳转（兼容 mraid）
+    function handleConvert() {
+      console.log("convert triggered, target: " + TARGET_URL);
+      if (typeof mraid !== "undefined" && mraid.open) {
+        mraid.open(TARGET_URL);
+      } else {
+        window.location.href = TARGET_URL;
       }
     }
+
+    function closeModal(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('J_modalMask').classList.remove('show');
+    }
+
+    // 滚动截流检测：滑到 65% 高度唤起弹窗
+    window.addEventListener('scroll', function() {
+      if (hasShownModal) return;
+      var scrollPos = window.scrollY + window.innerHeight;
+      var docHeight = document.documentElement.scrollHeight;
+      if (scrollPos / docHeight > 0.65) {
+        hasShownModal = true;
+        document.getElementById('J_modalMask').classList.add('show');
+      }
+    });
   <\/script>
 </body>
 </html>`;
 
-      const blob = new Blob([fullPageContent], { type: 'text/html;charset=utf-8' });
-      const downloadLink = document.createElement('a');
-      downloadLink.href = URL.createObjectURL(blob);
+      const blob = new Blob([standaloneHtml], { type: 'text/html;charset=utf-8' });
+      const dlLink = document.createElement('a');
+      dlLink.href = URL.createObjectURL(blob);
       const safeName = bookTitle.slice(0, 20).replace(/[\\/:*?"<>| ]/g, '_');
-      downloadLink.download = `${safeName || 'novel_page'}.html`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-      URL.revokeObjectURL(downloadLink.href);
+      dlLink.download = `${safeName || 'novel_landing_page'}.html`;
+      document.body.appendChild(dlLink);
+      dlLink.click();
+      document.body.removeChild(dlLink);
+      URL.revokeObjectURL(dlLink.href);
     });
   </script>
 </body>
